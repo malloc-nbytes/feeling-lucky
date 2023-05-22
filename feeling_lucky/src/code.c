@@ -1,18 +1,26 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int func1(int x) {
-  return x * 2;
+typedef struct {
+  char *fname, *lname;
+  int age;
+} Person;
+
+Person person_create(char *fname, char *lname, int age) {
+  Person person;
+  person.fname = fname;
+  person.lname = lname;
+  person.age = age;
+  return person;
 }
 
-float func2(float x) {
-  float y = 3.f;
-  return x * y;
+void person_print(Person *person) {
+  printf("First name: %s\n", person->fname);
+  printf("Last name: %s\n", person->lname);
+  printf("Age: %d\n", person->age);
 }
 
 int main(void) {
-
-  printf("Hello world!\n");
-
+  Person person = person_create("John", "Doe", 32);
+  person_print(&person);
   return 0;
 }

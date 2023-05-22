@@ -141,6 +141,8 @@ fn random_msg(rng: &mut ThreadRng) -> String {
     return MSGS[rng.gen_range(0..MSGS.len())].to_string();
 }
 
+const ATTEMPTS: u32 = 9;
+
 fn process_token(
     token: &str,
     rng: &mut ThreadRng,
@@ -235,6 +237,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() == 5 {
         odds = args[4].parse::<u32>().unwrap();
     }
+
+    println!("Chance of modification per word: {:.4}%",
+             (1.0 - f64::powf(1.0 - (1.0/odds as f64), ATTEMPTS as f64)) * 100.0);
 
     let (filepath, compiler, arguments) = (&args[1], &args[2], &args[3]);
     match fs::read_to_string(filepath) {

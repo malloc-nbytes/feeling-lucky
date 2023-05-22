@@ -14,12 +14,18 @@ const TYPES: [&str; 9] = [
     "int", "char", "float", "long", "byte", "short", "double", "float", "bool",
 ];
 
+fn get_random(rng: &mut ThreadRng, upper: u32) -> (u32, u32) {
+    (rng.gen_range(0..upper), rng.gen_range(0..upper))
+}
+
 fn reverse_token(token: String) -> String {
     token.chars().rev().collect()
 }
 
-fn get_random(rng: &mut ThreadRng, upper: u32) -> (u32, u32) {
-    (rng.gen_range(0..upper), rng.gen_range(0..upper))
+fn duplicate_token(token: String) -> String {
+    let mut new_token = String::from(&token);
+    new_token += &token;
+    new_token
 }
 
 fn delete_single_char(token: String, rng: &mut ThreadRng) -> String {
@@ -37,25 +43,24 @@ fn process_token(
     macros: &HashSet<&str>,
     types: &HashSet<&str>,
 ) -> String {
-    let mut res = String::new();
-
     if keywords.contains(token) {
+        todo!()
     } else if macros.contains(token) {
+        todo!()
     } else if types.contains(token) {
+        todo!()
     } else if token != " " {
-        let (x, y) = get_random(rng, 10);
-        if x == y {
-            return reverse_token(token.to_string());
+        for i in 0..3 {
+            let (x, y) = get_random(rng, 50);
+            match i {
+                0 if x == y => return reverse_token(token.to_string()),
+                1 if x == y => return delete_single_char(token.to_string(), rng),
+                2 if x == y => return duplicate_token(token.to_string()),
+                _ => ()
+            }
         }
-        let (x, y) = get_random(rng, 50);
-        if x == y {
-            return delete_single_char(token.to_string(), rng);
-        }
-    } else {
-        res += token;
     }
 
-    // res
     token.to_string()
 }
 

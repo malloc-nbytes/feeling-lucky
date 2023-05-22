@@ -3,15 +3,16 @@ use std::env;
 use std::fs;
 use std::process;
 
-use rand::rngs::ThreadRng;
 use rand::Rng;
+use rand::rngs::ThreadRng;
+use rand::seq::SliceRandom;
 
 const MACROS: [&str; 6] = ["#include", "#define", "#if", "#ifdef", "#ifndef", "#endif"];
 
-const KEYWORDS: [&str; 5] = ["main", "for", "while", "void", "return"];
+const KEYWORDS: [&str; 4] = ["main", "for", "while", "return"];
 
-const TYPES: [&str; 9] = [
-    "int", "char", "float", "long", "byte", "short", "double", "float", "bool",
+const TYPES: [&str; 10] = [
+    "int", "char", "float", "long", "byte", "short", "double", "float", "bool", "void",
 ];
 
 fn get_random(rng: &mut ThreadRng, upper: u32) -> (u32, u32) {
@@ -31,9 +32,29 @@ fn duplicate_token(token: String) -> String {
 fn delete_single_char(token: String, rng: &mut ThreadRng) -> String {
     let mut arr: Vec<char> = token.chars().collect();
     if token.len() > 0 {
-        arr.remove(rng.gen_range(0..120) % token.len());
+        arr.remove(rng.gen_range(0..16) % token.len());
     }
     arr.into_iter().collect()
+}
+
+fn swap_macros(macros: &HashSet<&str>, rng: &mut ThreadRng) -> String {
+    macros
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>()
+        .choose(rng)
+        .unwrap()
+        .to_string()
+}
+
+fn swap_types(types: &HashSet<&str>, rng: &mut ThreadRng) -> String {
+    types
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>()
+        .choose(rng)
+        .unwrap()
+        .to_string()
 }
 
 fn process_token(
@@ -43,33 +64,34 @@ fn process_token(
     macros: &HashSet<&str>,
     types: &HashSet<&str>,
 ) -> String {
-    if keywords.contains(token) {
-        todo!()
-    } else if macros.contains(token) {
-        todo!()
-    } else if types.contains(token) {
-        todo!()
-    } else if token != " " {
-        for i in 0..3 {
-            let (x, y) = get_random(rng, 50);
-            match i {
-                0 if x == y => return reverse_token(token.to_string()),
-                1 if x == y => return delete_single_char(token.to_string(), rng),
-                2 if x == y => return duplicate_token(token.to_string()),
-                _ => ()
+
+    let (mut x, mut y) = get_random(rng, 50);
+    match token {
+        token if keywords.contains(token) => todo!(),
+        token if macros.contains(token) && x == y => return swap_macros(&macros, rng),
+        token if types.contains(token) && x == y => return swap_types(&types, rng),
+        token if token != "\n" => {
+            for i in 0..4 {
+                (x, y) = get_random(rng, 50);
+                match i {
+                    0 if x == y => return reverse_token(token.to_string()),
+                    1 if x == y => return delete_single_char(token.to_string(), rng),
+                    2 if x == y => return duplicate_token(token.to_string()),
+                    3 if x == y => return String::new(),
+                    _ => ()
+                }
             }
         }
+        _ => return token.to_string()
     }
 
     token.to_string()
 }
 
-#[allow(unused_variables)]
-#[allow(unused_mut)]
 fn iter_file(data: String) -> String {
     let (mut res, lines, mut rng) = (
         String::new(),
-        data.split(|c| c == '\n').filter(|s| !s.is_empty()),
+        data.split(|c| c == '\n'),
         rand::thread_rng(),
     );
 
@@ -92,7 +114,6 @@ fn iter_file(data: String) -> String {
 }
 
 #[allow(unreachable_code)]
-#[allow(unused_variables)]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
 
@@ -105,9 +126,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match fs::read_to_string(filepath) {
         Ok(data) => {
-            let result = iter_file(data);
+            let _result = iter_file(data);
             unimplemented!();
-            fs::write(filepath, result)?;
+            fs::write(filepath, _result)?;
             Ok(())
         }
         Err(error) => {

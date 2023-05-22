@@ -246,7 +246,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(data) => {
             let result = iter_file(data, odds);
             println!("{result}");
-            // fs::write(filepath, result)?;
+            fs::write(filepath, result)?;
             compile(filepath, compiler, arguments);
             Ok(())
         }

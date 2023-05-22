@@ -32,7 +32,30 @@ const TYPES: [&str; 15] = [
     "size_t", "uint32_t", "uint64_t",
 ];
 
-const ODDS: u32 = 1000;
+const MSGS: [&str; 19] = [
+    "[code has been marked as duplicate]",
+    "pls learn to code",
+    "i showed you my code, pls respond :'(",
+    "Gone. Reduced to atoms... also rip atom",
+    "This is so sad. F",
+    "Actual speghetti code",
+    "Emacs > Vim",
+    "Vim > Emacs",
+    "VSCode moment frfr",
+    "Waltuh, put the code away Waltuh",
+    "yippe",
+    "my honest reaction to that information:",
+    "programminghorror",
+    "L L L L L L L L L L L L L L L L L",
+    "All errors any% speedrun",
+    "\"jUsT UsE pyTHoN bRo\"",
+    "---------------------------------\n^^^^The code above is cringe^^^^^\n",
+    "\n#include <stdio.h>\n\nint main(void) {\n  printf(\"Hello sadness!\");\n  return 0;\n}\n",
+    "no code?",
+];
+
+// const ODDS: u32 = 1000;
+const ODDS: u32 = 100;
 
 fn get_random(rng: &mut ThreadRng, upper: u32) -> (u32, u32) {
     (rng.gen_range(0..upper), rng.gen_range(0..upper))
@@ -66,6 +89,10 @@ fn swap_words(words: &HashSet<&str>, rng: &mut ThreadRng) -> String {
         .to_string()
 }
 
+fn random_msg(rng: &mut ThreadRng) -> String {
+    return MSGS[rng.gen_range(0..MSGS.len())].to_string();
+}
+
 fn process_token(
     token: &str,
     rng: &mut ThreadRng,
@@ -81,14 +108,15 @@ fn process_token(
         token if macros.contains(token) && hit => return swap_words(&macros, rng),
         token if types.contains(token) && hit => return swap_words(&types, rng),
         token if token != "\n" => {
-            for i in 0..4 {
+            for i in 0..5 {
                 (x, y) = get_random(rng, ODDS);
                 hit = x == y;
                 match i {
                     0 if hit => return reverse_token(token.to_string()),
                     1 if hit => return delete_single_char(token.to_string(), rng),
                     2 if hit => return duplicate_token(token.to_string()),
-                    3 if hit => return String::new(),
+                    3 if hit => return random_msg(rng),
+                    4 if hit => return String::new(),
                     _ => ()
                 }
             }
@@ -105,8 +133,8 @@ fn iter_file(data: String) -> String {
         rand::thread_rng(),
     );
 
-    // Remove file contents.
-    let (x, y) = get_random(&mut rng, ODDS * 100 + 100000);
+    // Remove file contents O_O.
+    let (x, y) = get_random(&mut rng, 100000);
     if x == y {
         return String::new();
     }
@@ -126,6 +154,7 @@ fn iter_file(data: String) -> String {
             format!("{}\n", processed_tokens)
         })
         .collect::<String>();
+
     res.pop();
     res
 }
@@ -157,7 +186,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match fs::read_to_string(filepath) {
         Ok(data) => {
             let result = iter_file(data);
-            fs::write(filepath, result)?;
+            println!("{result}");
+            // fs::write(filepath, result)?;
             compile(filepath, compiler, arguments);
             Ok(())
         }

@@ -1,8 +1,8 @@
-use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::process;
 use std::process::Command;
+use std::collections::HashSet;
 
 use rand::Rng;
 use rand::rngs::ThreadRng;
@@ -54,9 +54,6 @@ const MSGS: [&str; 19] = [
     "no code?",
 ];
 
-// const ODDS: u32 = 1000;
-const ODDS: u32 = 100;
-
 fn get_random(rng: &mut ThreadRng, upper: u32) -> (u32, u32) {
     (rng.gen_range(0..upper), rng.gen_range(0..upper))
 }
@@ -99,17 +96,18 @@ fn process_token(
     keywords: &HashSet<&str>,
     macros: &HashSet<&str>,
     types: &HashSet<&str>,
+    odds: u32
 ) -> String {
 
-    let (mut x, mut y) = get_random(rng, ODDS);
+    let (mut x, mut y) = get_random(rng, odds);
     let mut hit = x == y;
     match token {
         token if keywords.contains(token) && hit => return swap_words(&keywords, rng),
         token if macros.contains(token) && hit => return swap_words(&macros, rng),
         token if types.contains(token) && hit => return swap_words(&types, rng),
         token if token != "\n" => {
-            for i in 0..5 {
-                (x, y) = get_random(rng, ODDS);
+            for _ in 0..5 {
+                (x, y) = get_random(rng, odds);
                 hit = x == y;
                 match i {
                     0 if hit => return reverse_token(token.to_string()),
@@ -127,7 +125,7 @@ fn process_token(
     token.to_string()
 }
 
-fn iter_file(data: String) -> String {
+fn iter_file(data: String, odds: u32) -> String {
     let (lines, mut rng) = (
         data.split(|c| c == '\n'),
         rand::thread_rng(),
@@ -148,7 +146,7 @@ fn iter_file(data: String) -> String {
         .map(|line| {
             let tokens = line.split(' ');
             let processed_tokens: String = tokens
-                .map(|token| process_token(token, &mut rng, &keywords, &macros, &types))
+                .map(|token| process_token(token, &mut rng, &keywords, &macros, &types, odds))
                 .collect::<Vec<String>>()
                 .join(" ");
             format!("{}\n", processed_tokens)
@@ -174,18 +172,27 @@ fn compile(filepath: &str, compiler: &str, arguments: &str) {
     }
 }
 
+fn usage() {
+    eprintln!("ERROR: usage: ./feeling_lucky <code.x> <compiler> <compiler args> <optional odds>");
+    process::exit(1);
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
+    let mut odds = 1000u32;
 
-    if args.len() != 4 {
-        eprintln!("ERROR: usage: ./feeling_lucky <code.x> <compiler> <compiler args>");
-        process::exit(1);
+    if args.len() < 4 || args.len() > 5 {
+        usage();
+    }
+
+    if args.len() == 5 {
+        odds = args[4].parse::<u32>().unwrap();
     }
 
     let (filepath, compiler, arguments) = (&args[1], &args[2], &args[3]);
     match fs::read_to_string(filepath) {
         Ok(data) => {
-            let result = iter_file(data);
+            let result = iter_file(data, odds);
             println!("{result}");
             // fs::write(filepath, result)?;
             compile(filepath, compiler, arguments);

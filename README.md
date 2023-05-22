@@ -1,7 +1,7 @@
 # feeling-lucky
 
 ### This project is a joke. Do not use it in any serious manner. This ___will___ modify the file you provide. Make sure a backup exists.
-Feeling lucky? Then this is for you! Just provide a filepath to some code (c is most supported but any language works), provide the compiler/interpreter, any arguments for the compiler/interpreter, and (optionally) the odds of this program messing with the code.
+Feeling lucky? Then this is for you! Just provide a filepath to some code (c is most supported but any language works), provide the compiler/interpreter, any arguments for the compiler/interpreter, and (optionally) the odds of this program messing with the code. The program will then make various attempts to modify the code and will then try to compile it with what you give it. Will your code be able to run after putting it through this?
 
 ## Prerequisites
 Before running this project, make sure you have the following prerequisites installed on your system:
